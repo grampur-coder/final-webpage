@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FluidSim2D — Final Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #12151c;
+    --bg-card: #161a23;
+    --text: #e8ebf1;
+    --text-dim: #a1a8b8;
+    --text-mute: #6f7787;
+    --accent: #5dc1ff;
+    --accent-2: #b18cff;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  code, pre, .mono {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  .hero {
+    background:
+      radial-gradient(1200px 600px at 30% -10%, rgba(93, 193, 255, 0.18), transparent 60%),
+      radial-gradient(900px 500px at 80% 0%, rgba(177, 140, 255, 0.18), transparent 60%),
+      linear-gradient(180deg, #0c0f15 0%, #0b0d12 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 24px 64px;
+  }
+
+  .hero-inner {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    background: linear-gradient(90deg, #ffffff 0%, #b9d8f5 60%, #c9b6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tagline {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0 0 28px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .pill strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+
+  section {
+    margin-bottom: 56px;
+  }
+
+  section:last-child {
+    margin-bottom: 0;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    margin: 0 0 16px;
+    color: var(--text);
+  }
+
+  p.dim {
+    color: var(--text-dim);
+  }
+
+  ul, ol {
+    padding-left: 22px;
+    margin: 0 0 16px;
+  }
+
+  li {
+    margin-bottom: 8px;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(93, 193, 255, 0.3);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  a:hover {
+    color: #92d6ff;
+    border-bottom-color: var(--accent);
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin: 16px 0;
+  }
+
+  .card-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-mute);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 720px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .feature-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .feature-list li:last-child {
+    border-bottom: none;
+  }
+
+  .feature-list .ftag {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(93, 193, 255, 0.12);
+    color: var(--accent);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .feature-list .ftag.purple {
+    background: rgba(177, 140, 255, 0.12);
+    color: var(--accent-2);
+  }
+
+  pre, code {
+    font-size: 14px;
+  }
+
+  pre {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    color: var(--text);
+  }
+
+  code {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #d8e2f5;
+    font-size: 13.5px;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    border: none;
+  }
+
+  .equation-block {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  figure {
+    margin: 24px 0;
+  }
+
+  figure img,
+  figure video {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  figcaption {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .bench-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 14px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .bench-table th,
+  .bench-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .bench-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .bench-table thead th {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .placeholder {
+    aspect-ratio: 16 / 9;
+    background:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0 8px, rgba(255, 255, 255, 0.04) 8px 16px),
+      var(--bg-elev);
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-mute);
+    font-size: 14px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .contributors {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+
+  .contributor {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .contributor h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .contributor p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+
+  .toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 32px 0 0;
+  }
+
+  .toc-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    color: var(--text-mute);
+    margin: 0 0 10px;
+  }
+
+  .toc ol {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-dim);
+    columns: 2;
+    column-gap: 32px;
+  }
+
+  @media (max-width: 720px) {
+    .toc ol { columns: 1; }
+  }
+
+  .toc a {
+    color: var(--text);
+    border-bottom: none;
+  }
+
+  .toc a:hover {
+    color: var(--accent);
+  }
+
+  .pipeline {
+    counter-reset: step;
+    padding: 0;
+    list-style: none;
+    margin: 16px 0;
+  }
+
+  .pipeline li {
+    counter-increment: step;
+    position: relative;
+    padding: 10px 0 10px 44px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .pipeline li:last-child { border-bottom: none; }
+
+  .pipeline li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(93, 193, 255, 0.12);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">CS 184/284A · Spring 2026 · Final Project</div>
+    <h1>FluidSim2D</h1>
+    <p class="tagline">Real-time 2D fluid dynamics simulation in the browser, solving the incompressible Navier&ndash;Stokes equations entirely in WebGL2 fragment shaders.</p>
+    <div class="meta-row">
+      <span class="pill"><strong>Team</strong> Athul Krishnan, Ashton Lee, Gautam Rampur, Yamuna Rao</span>
+    </div>
+
+    <div class="toc">
+      <p class="toc-title">Contents</p>
+      <ol>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#approach">Technical Approach</a></li>
+        <li><a href="#problems">Problems Encountered</a></li>
+        <li><a href="#lessons">Lessons Learned</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#references">References</a></li>
+        <li><a href="#contributions">Contributions</a></li>
+      </ol>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="abstract">
+  <h2>Abstract</h2>
+  <p>
+    Fluid simulation is one of the most visually striking and computationally demanding problems in computer graphics. Accurately modeling the movement of fluids requires solving the Navier-Stokes equations, a set of nonlinear PDEs that describe the motion of viscous fluid substances. These equations govern the behavior of fluid flow and have no known general closed-form solution.
+  </p> 
+  <p>
+    FluidSim2D is an interactive, real-time 2D fluid simulator that runs entirely in a web browser. We solve the
+    incompressible Navier&ndash;Stokes equations on a regular grid using operator splitting, with every step of the
+    pipeline implemented as a fullscreen WebGL2 fragment shader. The core graphics work consists of semi-Lagrangian
+    advection, an iterative Jacobi pressure projection that enforces incompressibility, viscosity diffusion, thermal
+    buoyancy on an advected temperature field, no-slip walls, and analytically antialiased obstacle boundaries built
+    from signed-distance functions. On top of the simulation we built lightweight tooling (an in-app benchmark, saved
+    profiles, and visual presets) that mostly exists to help us tune and demo the simulator.
+  </p>
+</section>
+
+<section id="approach">
+  <h2>Technical Approach</h2>
+
+  <h3>Governing equations</h3>
+  <p>
+    We simulate an incompressible and homogeneous fluid by integrating the Navier&ndash;Stokes
+    equations <a href="#ref-ns">[1]</a>:
+  </p>
+  <div class="equation-block">
+    $$\frac{\partial \mathbf{u}}{\partial t} = -(\mathbf{u}\cdot\nabla)\mathbf{u} - \frac{1}{\rho}\nabla p + \nu\nabla^{2}\mathbf{u} + \mathbf{f}, \qquad \nabla\cdot\mathbf{u}=0$$
+  </div>
+  <p>
+    where $\mathbf{u}$ is velocity, $p$ is pressure, $\nu$ is kinematic viscosity, and $\mathbf{f}$ collects external
+    forces (mouse-driven impulses and thermal buoyancy). We use the standard operator-splitting approach and apply
+    each term as a separate shader pass. We additionally advect a passive RGB dye field $d$ and a scalar temperature
+    field $T$ through the same velocity field.
+  </p>
+
+  <h3>Pipeline</h3>
+  <p>Every frame, the simulator runs the following ordered passes:</p>
+  <ol class="pipeline">
+    <li><strong>Advect</strong> velocity, dye, and temperature using semi-Lagrangian backtracing.</li>
+    <li><strong>Diffuse</strong> velocity with $N$ Jacobi iterations to apply viscosity.</li>
+    <li><strong>Apply buoyancy</strong>: add an upward force proportional to temperature.</li>
+    <li><strong>Mouse splat</strong>: inject Gaussian impulses of velocity, dye, and heat at the cursor.</li>
+    <li><strong>Mask velocity</strong> inside obstacles (pre-projection).</li>
+    <li><strong>Compute divergence</strong> of the velocity field.</li>
+    <li><strong>Pressure solve</strong>: $N$ Jacobi iterations of the discrete Poisson equation.</li>
+    <li><strong>Subtract pressure gradient</strong> to project velocity onto a divergence-free field.</li>
+    <li><strong>Mask velocity</strong> inside obstacles (post-projection).</li>
+    <li><strong>Boundary conditions</strong>: no-slip walls and Neumann pressure at the domain edge.</li>
+    <li><strong>Composite</strong> dye with color grading and overlay the obstacle mask.</li>
+  </ol>
+
+  <h3>Semi-Lagrangian advection</h3>
+  <p>
+    For each output cell at position $\mathbf{x}$ we backtrace one timestep along the local velocity to find a "previous"
+    position $\mathbf{x}-\Delta t\,\mathbf{u}(\mathbf{x})$, then bilinearly sample the source field there. This is
+    unconditionally stable for any timestep and is implemented in a single fragment shader pass per advected field.
+  </p>
+  <pre><code>vec2 prev_uv = v_uv - u_dt * texture(u_velocity, v_uv).xy;
+outColor    = u_dissipation * texture(u_source, prev_uv);</code></pre>
+
+  <h3>Pressure projection (Jacobi)</h3>
+  <p>
+    To enforce $\nabla\cdot\mathbf{u}=0$ we solve the Poisson equation
+    $\nabla^{2}p = \nabla\cdot\mathbf{u}^{*}$ using Jacobi iteration. Each iteration is a single fragment shader pass
+    that reads from the previous pressure texture and writes to the next via ping-pong render targets:
+  </p>
+  <div class="equation-block">
+    $$p_{i,j}^{(k+1)} = \tfrac{1}{4}\!\left(p_{i+1,j}^{(k)} + p_{i-1,j}^{(k)} + p_{i,j+1}^{(k)} + p_{i,j-1}^{(k)} - \mathrm{div}\,\mathbf{u}_{i,j}\right)$$
+  </div>
+  <p>
+    We then subtract $\nabla p$ from the intermediate velocity to recover an incompressible flow. Viscosity diffusion
+    uses the same Jacobi structure with the modified weights from Harris <a href="#ref-harris">[2]</a>.
+  </p>
+
+  <h3>Obstacles and antialiased boundaries</h3>
+  <p>
+    Obstacles are stored as analytic shapes (circles, rectangles, ellipses, diamonds) and rasterized into a single
+    grayscale mask texture. Originally we used hard <code>step()</code> tests, which produced visibly jagged edges and
+    grid-aligned flow artifacts at obstacle boundaries. We replaced the binary test with an analytic coverage estimate:
+    for each shape we evaluate a signed-distance function and apply <code>smoothstep(-edge, edge, d)</code>, where
+    <code>edge</code> is one texel and the transition therefore spans roughly one texel on either side of the boundary.
+  </p>
+  <pre><code>// Ellipse SDF (gradient-norm approximation)
+vec2 k = p / u_size;
+float f = dot(k, k) - 1.0;
+vec2  g = 2.0 * p / (u_size * u_size);
+float d = f / max(length(g), 1e-6);
+float edge = max(u_texel.x, u_texel.y);
+float mask = 1.0 - smoothstep(-edge, edge, d);</code></pre>
+  <p>
+    Because the resulting mask is now in $[0,1]$ near the boundary instead of $\{0,1\}$, the velocity-zeroing pass and
+    the splat-clipping pass both respond proportionally to fractional coverage, giving the simulation a smoother
+    response near walls without supersampling the entire grid.
+  </p>
+
+  <h3>Buoyancy and dye injection</h3>
+  <p>
+    A scalar temperature field $T$ is advected with the velocity and applies an upward body force
+    $\mathbf{f}_{\text{buoy}} = (0,\, \kappa T)$ each frame. The mouse-driven splat injects three things at once: a
+    velocity impulse proportional to mouse motion, a colored dye blob, and heat proportional to splat speed. The splat
+    shader reads the obstacle mask and multiplies the Gaussian by $(1 - \text{mask})$, so dye and velocity cannot be
+    drawn through obstacles.
+  </p>
+
+  <h3>Tooling</h3>
+  <p>
+    To support tuning and demoing the simulator we added a small set of supporting features: live sliders for solver
+    iterations, viscosity, dissipation, splat radius and force, and buoyancy strength; an in-app benchmark that
+    measures FPS and ms/frame across $256\times256$, $512\times512$, and $1024\times1024$ grids; a saved-profiles
+    system backed by <code>localStorage</code>; a small set of built-in visual presets; and a lightweight color
+    grading pass at composite time. These do not change the underlying simulation but were essential for iterating
+    quickly on parameters and for producing the showcase clip.
+  </p>
+</section>
+
+<section id="problems">
+  <h2>Problems Encountered</h2>
+
+  <div class="card">
+    <p class="card-title">Dye and velocity bleeding through obstacles</p>
+    <p>
+      Initially the splat shader added Gaussian impulses to dye and velocity at the cursor regardless of the obstacle
+      mask. The post-projection velocity zeroing eventually erased the velocity inside obstacles, but dye still appeared
+      visibly inside, which made it look like users were "drawing through" walls. We fixed this by sampling the
+      obstacle mask in the splat shader itself and multiplying the injected color by $(1 - \text{mask})$.
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Aliased obstacle edges</p>
+    <p>
+      Using <code>step()</code> on shape inequalities produced hard, grid-aligned mask edges. This had two effects: it
+      looked visibly jagged, and it caused the simulation to "snap" velocity to or away from boundary cells in a way
+      that produced low-frequency artifacts. We replaced the boolean test with an analytic SDF + <code>smoothstep</code>
+      coverage estimate, giving sub-pixel edges and proportional velocity masking near boundaries.
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Distinguishing real slowdowns from vsync rounding</p>
+    <p>
+      Because the browser snaps to vsync, a small slowdown can present as a sudden jump from 60 FPS to 30 FPS,
+      which makes it hard to tell a real regression from background load. To get an unambiguous number, the
+      benchmark panel reports raw <code>ms/frame</code> directly alongside FPS, computed as the elapsed sample
+      window divided by the rendered frame count.
+    </p>
+  </div>
+
+  <div class="card">
+    <p class="card-title">Texture format support</p>
+    <p>
+      The simulator renders to <code>RGBA16F</code> textures, which requires the <code>EXT_color_buffer_float</code>
+      extension on WebGL2. We check for the extension at context creation and throw an explicit error if it is
+      missing, so the failure mode is a clear exception rather than silent all-black output.
+    </p>
+  </div>
+</section>
+
+<section id="lessons">
+  <h2>Lessons Learned</h2>
+  <ul>
+    <li>
+      <strong>Boundary handling dominates visual quality.</strong> The single biggest jump in perceived realism came
+      from antialiasing the obstacle mask and clipping splats with it. Solver tuning matters less than getting the
+      walls right.
+    </li>
+
+    <li>
+      <strong>Iteration tooling pays off.</strong> A simple in-app benchmark and saved configurations made parameter
+      tuning much faster, even though they are not part of the simulation itself.
+    </li>
+  </ul>
+</section>
+
+<section id="results">
+  <h2>Results</h2>
+
+  <p>
+    The entire pipeline  runs every frame as fragment-shader passes, so
+    cost scales with grid resolution. The in-app benchmark runs the simulator at $256\times256$, $512\times512$,
+    and $1024\times1024$.
+  </p>
+
+
+  <figure>
+    <video src="media/showcase.mp4" controls muted loop playsinline poster="media/poster.jpg">
+      Your browser does not support embedded video.
+    </video>
+    <figcaption>Final showcase clip. Drop a file at <code>report/media/showcase.mp4</code> (and an optional <code>poster.jpg</code>) before deploying.</figcaption>
+  </figure>
+
+  <div class="grid-2">
+    <figure>
+      <div class="placeholder">Replace with screenshot:<br/>flow around an obstacle.<br/>Save as <code>report/media/sim-1.png</code>.</div>
+      <figcaption>Vortex shedding behind a circular obstacle.</figcaption>
+    </figure>
+    <figure>
+      <div class="placeholder">Replace with screenshot:<br/>antialiased obstacle edges.<br/>Save as <code>report/media/aa.png</code>.</div>
+      <figcaption>Before/after of the SDF + <code>smoothstep</code> AA pass on obstacle edges.</figcaption>
+    </figure>
+    <figure>
+      <div class="placeholder">Replace with screenshot:<br/>rising buoyant plume.<br/>Save as <code>report/media/buoyancy.png</code>.</div>
+      <figcaption>Hot dye rising under thermal buoyancy.</figcaption>
+    </figure>
+    <figure>
+      <div class="placeholder">Replace with screenshot:<br/>benchmark panel.<br/>Save as <code>report/media/benchmark.png</code>.</div>
+      <figcaption>Built-in benchmark across $256$, $512$, and $1024$ grids.</figcaption>
+    </figure>
+  </div>
+
+</section>
+
+<section id="references">
+  <h2>References</h2>
+  <ol>
+    <li id="ref-ns">
+      <em>Navier&ndash;Stokes equations.</em> Wikipedia.
+      <a href="https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations">Article</a>.
+    </li>
+    <li id="ref-harris">
+      Harris, M. <em>Fast Fluid Dynamics Simulation on the GPU.</em> GPU Gems, Chapter 38, 2004.
+      <a href="https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu">Online</a>.
+    </li>
+    <li id="ref-cs184">
+      O'Brien, J. F. <em>CS 184/284A: Computer Graphics and Imaging</em>, UC Berkeley, Spring 2026.
+      <a href="https://cs184.eecs.berkeley.edu/sp26/">Course site</a>.
+    </li>
+  </ol>
+</section>
+
+<section id="contributions">
+  <h2>Contributions</h2>
+
+  <div class="contributors">
+    <div class="contributor">
+      <h4>Athul Krishnan</h4>
+      <p>[Edit me] </p>
+    </div>
+    <div class="contributor">
+      <h4>Ashton Lee</h4>
+      <p>[Edit me] </p>
+    </div>
+    <div class="contributor">
+      <h4>Gautam Rampur</h4>
+      <p>benchmarking, obstacle placement, multi shape SDFs, antialiased boundaries, and various UI additions.</p>
+    </div>
+    <div class="contributor">
+      <h4>Yamuna Rao</h4>
+      <p>[Edit me].</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  CS 184/284A &middot; Spring 2026 &middot; FluidSim2D &middot;
+  <a href="https://github.com/">Source on GitHub</a>
+</footer>
+
+</body>
+</html>
