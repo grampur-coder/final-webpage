@@ -643,13 +643,6 @@ float mask = 1.0 - smoothstep(-edge, edge, d);</code></pre>
 <section id="results">
   <h2>Results</h2>
 
-  <p>
-    The entire pipeline  runs every frame as fragment-shader passes, so
-    cost scales with grid resolution. The in-app benchmark runs the simulator at $256\times256$, $512\times512$,
-    and $1024\times1024$.
-  </p>
-
-
   <figure>
     <video src="media/showcase.mp4" controls muted loop playsinline poster="media/poster.jpg">
       Your browser does not support embedded video.
@@ -671,8 +664,8 @@ float mask = 1.0 - smoothstep(-edge, edge, d);</code></pre>
       <figcaption>Hot dye rising under thermal buoyancy.</figcaption>
     </figure>
     <figure>
-      <div class="placeholder">Replace with screenshot:<br/>benchmark panel.<br/>Save as <code>report/media/benchmark.png</code>.</div>
-      <figcaption>Built-in benchmark across $256$, $512$, and $1024$ grids.</figcaption>
+      <img src="benchmark.png" alt="In-app benchmark panel showing FPS and ms/frame across 256, 512, and 1024 grids." />
+      <figcaption>Built-in benchmark across $256$, $512$, and $1024$ grids: FPS curve and per-resolution ms/frame.</figcaption>
     </figure>
   </div>
 
